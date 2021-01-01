@@ -19,5 +19,8 @@ void ThreadWorker::slots_start_work()
 
 void ThreadWorker::slot_finished_work()
 {
+	thread_id = QThread::currentThreadId();
+	QThread::sleep(1);
 	qDebug() << "worker in thread:" << QThread::currentThreadId() << " finished work";
+	
 }
