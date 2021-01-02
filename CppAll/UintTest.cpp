@@ -3,6 +3,7 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <ch_tools.h>
+
 UnitTest::UnitTest(QObject *parent)
 	: QObject(parent)
 {
@@ -71,5 +72,22 @@ void UnitTest::test_RemoveDir()
 	t2.open(QFile::WriteOnly);
 	ch::removeDirForce("test1");
 	QVERIFY(!dir.exists("test1"));
+}
+
+void UnitTest::test_OpencvVideoCapture()
+{
+	//一些videoCapture的函数 但是这个却不能知道是哪个摄像头的，可能需要更底层的ffmpeg 之类的库吧
+	cv::VideoCapture cap(0);
+	//设置自动变焦 https://answers.opencv.org/question/96137/is-there-any-range-of-values-for-the-exposure-flag/
+	cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 0.75);
+	//手动变焦
+	cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 0.25);
+	//设置焦距
+	cap.set(cv::CAP_PROP_EXPOSURE, 8);
+	//图片融合 hdr相关
+	cv::Mat mat = cv::imread("wechat.jpg");
+	std::vector<cv::Mat> images(2,mat);
+	cv::Mat fusion = ch::fusionImage(images);
+	QVERIFY(fusion.size == mat.size);
 }
 

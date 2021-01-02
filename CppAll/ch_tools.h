@@ -184,6 +184,29 @@ namespace ch {
 	}
 #endif
 
+#ifdef OPENCV_ON
+	inline cv::Mat fusionImage(const std::vector<cv::Mat>& images) {
+		//https://docs.opencv.org/master/d3/db7/tutorial_hdr_imaging.html
+		//Í¼Æ¬µÄÈÚºÏ
+		cv::Mat fusion;
+		std::vector<cv::Mat> images;
+		//¼ì²âº¯Êý
+		if (images.size()==0 || images[0].rows==0 || images[0].cols == 0)
+		{
+			return fusion;
+		}
+		for (auto i=1;i<images.size();i++)
+		{
+			if (images[i].size !=images[0].size)
+			{
+				return fusion;
+			}
+		}
+		cv::Ptr<cv::MergeMertens> merge_mertens = cv::createMergeMertens();
+		merge_mertens->process(images, fusion);
+		return fusion;
+	}
+#endif // OPENCV_ON
 
 
 }
