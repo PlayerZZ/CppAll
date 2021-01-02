@@ -75,9 +75,10 @@ namespace ch {
 			for (int i = infoNum - 1; i >= 0; i--)
 			{
 				curFile = fileList[i];
+				auto filename1 = curFile.absoluteFilePath();
 				if (curFile.isFile())//如果是文件，删除文件
 				{
-					QFile fileTemp(curFile.filePath());
+					QFile fileTemp(curFile.absoluteFilePath());
 					fileTemp.remove();
 					fileList.removeAt(i);
 				}
@@ -104,6 +105,8 @@ namespace ch {
 				}
 			}
 		}
+		//最后删除目录本身
+		dir.rmdir(".");
 		return true;
 	}
 #endif

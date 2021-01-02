@@ -68,8 +68,11 @@ void UnitTest::test_RemoveDir()
 	//创建文件
 	QFile t1("test1/1.txt");
 	t1.open(QFile::WriteOnly);
+	//not free can't delete
+	t1.close();
 	QFile t2("test1/test2/2.txt");
 	t2.open(QFile::WriteOnly);
+	t2.close();
 	ch::removeDirForce("test1");
 	QVERIFY(!dir.exists("test1"));
 }
@@ -77,17 +80,29 @@ void UnitTest::test_RemoveDir()
 void UnitTest::test_OpencvVideoCapture()
 {
 	//一些videoCapture的函数 但是这个却不能知道是哪个摄像头的，可能需要更底层的ffmpeg 之类的库吧
+	int i = 0;
 	cv::VideoCapture cap(0);
 	//设置自动变焦 https://answers.opencv.org/question/96137/is-there-any-range-of-values-for-the-exposure-flag/
+	std::vector<cv::Mat> images(6,cv::Mat());
+	if (cap.isOpened())
+	{
+		//cv::Mat mat;
+		for (size_t i = 0; i < images.size(); i++)
+		{
+			cap.read(images[i]);
+		}
+	}
+	else {
+		cv::Mat mat = cv::imread("wechat.jpg");
+		images = std::vector<cv::Mat>(6, mat);
+	}
 	cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 0.75);
 	//手动变焦
 	cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 0.25);
 	//设置焦距
 	cap.set(cv::CAP_PROP_EXPOSURE, 8);
 	//图片融合 hdr相关
-	cv::Mat mat = cv::imread("wechat.jpg");
-	std::vector<cv::Mat> images(2,mat);
 	cv::Mat fusion = ch::fusionImage(images);
-	QVERIFY(fusion.size == mat.size);
+	QVERIFY(fusion.size == images[0].size);
 }
 
