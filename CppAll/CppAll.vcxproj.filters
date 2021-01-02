@@ -73,15 +73,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ThreadWorker.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_TXCOS.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_TXCOS.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="TXCOS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.h">
@@ -100,9 +91,6 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="ch_tools.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="TXCOS.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
