@@ -189,7 +189,6 @@ namespace ch {
 		//https://docs.opencv.org/master/d3/db7/tutorial_hdr_imaging.html
 		//Í¼Æ¬µÄÈÚºÏ
 		cv::Mat fusion;
-		std::vector<cv::Mat> images;
 		//¼ì²âº¯Êý
 		if (images.size()==0 || images[0].rows==0 || images[0].cols == 0)
 		{
