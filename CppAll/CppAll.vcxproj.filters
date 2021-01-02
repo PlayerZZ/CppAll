@@ -73,9 +73,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ThreadWorker.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="ch_tools.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.h">
@@ -104,5 +101,8 @@
     <ClInclude Include="ch_switch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="vs快捷键.txt" />
   </ItemGroup>
 </Project>
