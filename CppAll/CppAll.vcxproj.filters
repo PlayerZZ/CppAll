@@ -82,6 +82,12 @@
     <ClCompile Include="TXCOS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="httplib.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.h">
@@ -111,6 +117,15 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="ch_switch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="httplib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tinyxml2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
