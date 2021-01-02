@@ -41,8 +41,13 @@ void UnitTest::test_Qt_thread()
 
 void UnitTest::test_OpencvAbout()
 {
-	//一些opencv 相关的函数
-
+	//一些opencv 相关的函数 如何检测呢?
+	//读取图片
+	QImage image("Resources/wechat.jpg");
+	cv::Mat mat = ch::QImage2cvMat(image);
+	QImage image2 = ch::cvMat2QImage(mat);
+	//因为重载的关系 就是对比的像素值
+	QVERIFY(image == image2);
 }
 
 void UnitTest::test_StringConvert()
@@ -56,6 +61,15 @@ void UnitTest::test_StringConvert()
 
 void UnitTest::test_RemoveDir()
 {
-
+	//先创建目录
+	QDir dir;
+	dir.mkpath("test1/test2");
+	//创建文件
+	QFile t1("test1/1.txt");
+	t1.open(QFile::WriteOnly);
+	QFile t2("test1/test2/2.txt");
+	t2.open(QFile::WriteOnly);
+	ch::removeDirForce("test1");
+	QVERIFY(!dir.exists("test1"));
 }
 
