@@ -73,6 +73,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ThreadWorker.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="ch_tools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.h">
@@ -90,10 +93,16 @@
     <CustomBuild Include="ThreadWorker.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="ch_tools.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_MainWindow.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ch_switch.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

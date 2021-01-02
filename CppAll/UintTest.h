@@ -11,4 +11,5 @@ public:
 	~UnitTest();
 private slots:
 void test_Qt_thread();
+void test_OpencvAbout();
 };

@@ -38,4 +38,9 @@ void UnitTest::test_Qt_thread()
 	QVERIFY(work_thread_worker->thread_id != main_thread_worker->thread_id);
 }
 
+void UnitTest::test_OpencvAbout()
+{
+	//一些opencv 相关的函数
+
+}
 
