@@ -15,4 +15,6 @@ void test_OpencvAbout();
 void test_StringConvert();
 void test_RemoveDir();
 void test_OpencvVideoCapture();
+void test_Qt_threadPool();
+void test_Qt_Concurrent();
 };

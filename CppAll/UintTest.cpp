@@ -3,7 +3,8 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <ch_tools.h>
-
+#include "Tasker.h"
+#include <QThreadPool>
 UnitTest::UnitTest(QObject *parent)
 	: QObject(parent)
 {
@@ -104,5 +105,26 @@ void UnitTest::test_OpencvVideoCapture()
 	//图片融合 hdr相关
 	cv::Mat fusion = ch::fusionImage(images);
 	QVERIFY(fusion.size == images[0].size);
+}
+
+void UnitTest::test_Qt_threadPool()
+{
+	//测试qt的线程池
+	Dispatcher dis;
+	for (int i=0;i<10;i++)
+	{
+		Tasker *tasker = new Tasker(&dis);
+		QObject::connect(tasker, &Tasker::signal_finished, &dis, &Dispatcher::slot_finished, Qt::QueuedConnection);
+		QThreadPool::globalInstance()->start(tasker);
+	}
+	QEventLoop loop;
+	QTimer::singleShot(2000, [&] {loop.exit(); });
+	loop.exec();
+
+}
+
+void UnitTest::test_Qt_Concurrent()
+{
+	//测试Qt的并发性
 }
 
