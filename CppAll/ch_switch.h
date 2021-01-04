@@ -9,4 +9,5 @@
 #define http_lib_ON
 #define jsoncpp_ON
 #define tinyxml_ON
+//#define TEST_ALL
 //todo ºóÐø¿¼ÂÇheader only

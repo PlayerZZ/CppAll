@@ -2,7 +2,6 @@
 #include "ThreadWorker.h"
 #include <QEventLoop>
 #include <QTimer>
-#include <ch_tools.h>
 #include "Tasker.h"
 #include <QThreadPool>
 #include <QtConcurrent/QtConcurrentRun>
@@ -16,7 +15,7 @@ UnitTest::~UnitTest()
 {
 	getchar();
 }
-
+#ifdef TEST_ALL
 void UnitTest::test_Qt_thread()
 {
 	//QT 多线程正确用法
@@ -152,5 +151,10 @@ void UnitTest::test_Qt_Concurrent()
 	QEventLoop loop;
 	QTimer::singleShot(20, [&] {loop.exit(); });
 	loop.exec();
+}
+#endif
+void UnitTest::test_TxCos()
+{
+
 }
 
