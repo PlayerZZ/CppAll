@@ -10,7 +10,7 @@ TXCOS::TXCOS(const QString& region, const QString& appid, const QString& bucket,
 
 TXCOS::TXCOS()
 {
-	QSettings server_config("server_config", QSettings::IniFormat);
+	QSettings server_config("server_config.ini", QSettings::IniFormat);
 	//读取配置文件进行初始化
 	_region = server_config.value("server/region").toString();
 	_sid = server_config.value("server/secret_id").toString();
@@ -27,18 +27,25 @@ TXCOS::~TXCOS()
 bool TXCOS::sendFile(const QString& filename)
 {
 	QByteArray data = ch::qReadAll(filename);
+	QString uri = filename;
+	if (uri[0] != '/')
+	{
+		uri = "/" + uri;
+	}
 	if (!data.size())
 	{
 		return false;
 	}
 	httplib::Client client(gethost().toStdString());
 	client.set_read_timeout(30, 100);
-	httplib::Headers header{ {"host",gethost().toStdString()},{"Authorization",getauth(filename).toStdString()} };
+	auto host = gethost();
+	httplib::Headers header{ {"host",gethost().toStdString()},{"Authorization",getauth(uri).toStdString()} };
 	//数据的提供者 这个offset 和 length 都是自动控制的
 	httplib::ContentProvider provider = [&](size_t offset, size_t length, httplib::DataSink &sink) {
 		sink.write(&data.data()[offset], length);
 	};
-	auto res = client.Put(filename.toUtf8(), header, data.size(), provider, "");
+	
+	auto res = client.Put(uri.toUtf8(), header, data.size(), provider, "");
 	qDebug() << "send file res:" << res->body.c_str();
 	return true;
 }

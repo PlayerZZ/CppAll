@@ -25,5 +25,5 @@ private:
 	QString _host;
 	QString gethost();
 	QString geturl(const QString& filename);
-	QString getauth(const QString& filename,const QString& method ="post");
+	QString getauth(const QString& filename,const QString& method ="put");
 };

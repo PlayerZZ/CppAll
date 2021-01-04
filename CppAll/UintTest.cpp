@@ -6,6 +6,7 @@
 #include <QThreadPool>
 #include <QtConcurrent/QtConcurrentRun>
 #include <QFutureWatcher>
+#include <TXCOS.h>
 UnitTest::UnitTest(QObject *parent)
 	: QObject(parent)
 {
@@ -155,6 +156,7 @@ void UnitTest::test_Qt_Concurrent()
 #endif
 void UnitTest::test_TxCos()
 {
-
+	TXCOS cos;
+	QVERIFY(cos.sendFile("Resources/wechat.jpg"));
 }
 
