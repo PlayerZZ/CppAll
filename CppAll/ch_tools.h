@@ -9,6 +9,8 @@
 #include <QFileInfoList>
 #include <QTextCodec>
 #include <QCryptographicHash>
+#include <fstream>
+#include <QDebug>
 //转换为QString
 //from stringliteral to qstring
 #define _Q(s) (QString::fromLocal8Bit(s))
@@ -23,10 +25,20 @@
 #endif // OPENCV_ON
 
 namespace ch {
-	
+	enum OUT_TYPE
+	{
+		raw,
+		hex,
+		bash64
+	};
+	inline std::vector<char> stdreadfile(const std::string& filename) {
+		std::ifstream fin(filename, std::ios_base::binary);
+		std::vector<char> buffer(std::istreambuf_iterator<char>(fin), {});
+		return buffer;
+	}
 #ifdef QT_ON
 	//hmacsha1 加密方法
-	inline QByteArray hmacSha1(QByteArray key, QByteArray baseString)
+	inline QByteArray hmacsha1(QByteArray key, QByteArray baseString)
 	{
 		int blockSize = 64; // HMAC-SHA-1 block size, defined in SHA-1 standard
 		if (key.length() > blockSize) { // if key is longer than block size (64), reduce key length with SHA-1 compression
@@ -51,10 +63,19 @@ namespace ch {
 		QByteArray hashed = QCryptographicHash::hash(total, QCryptographicHash::Sha1);
 		return hashed;
 	}
-	inline QString hmacsha1(const QString& key, const QString& str_baseString,const int& out_type = 1)
+	inline QString hmacsha1(const QString& key, const QString& str_baseString,const OUT_TYPE& out_type = hex)
 	{
-		//to hex or base64
-		return hmacSha1(key.toUtf8(), str_baseString.toUtf8()).toHex();
+		switch (out_type)
+		{
+		case ch::raw:
+			return hmacsha1(key.toUtf8(), str_baseString.toUtf8());
+		case ch::hex:
+			return hmacsha1(key.toUtf8(), str_baseString.toUtf8()).toHex();
+		case ch::bash64:
+			return hmacsha1(key.toUtf8(), str_baseString.toUtf8()).toBase64();
+		default:
+			return QByteArray();
+		}
 	}
 	//std::string <-> QString
 	inline std::string toString(const QString& qstr) {
@@ -140,6 +161,14 @@ namespace ch {
 		//最后删除目录本身
 		dir.rmdir(".");
 		return true;
+	}
+	inline QByteArray qReadAll(const QString& filename) {
+		QFile file(filename);
+		if (file.open(QIODevice::ReadOnly))
+		{
+			return file.readAll();
+		}
+		return QByteArray();
 	}
 #endif
 

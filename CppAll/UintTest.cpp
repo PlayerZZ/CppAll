@@ -5,6 +5,8 @@
 #include <ch_tools.h>
 #include "Tasker.h"
 #include <QThreadPool>
+#include <QtConcurrent/QtConcurrentRun>
+#include <QFutureWatcher>
 UnitTest::UnitTest(QObject *parent)
 	: QObject(parent)
 {
@@ -126,5 +128,29 @@ void UnitTest::test_Qt_threadPool()
 void UnitTest::test_Qt_Concurrent()
 {
 	//测试Qt的并发性
+	auto main_thread_id = QThread::currentThreadId();
+	qDebug() << "0 current thread id:" << QThread::currentThreadId();
+	QtConcurrent::run([=]()
+	{
+		// 需要执行的代码
+		qDebug() << "1 current thread id:" << QThread::currentThreadId();
+		QVERIFY(main_thread_id != QThread::currentThreadId());
+	});
+	QFutureWatcher<void> *future_wathcher = new QFutureWatcher<void>;
+	connect(future_wathcher, &QFutureWatcher<void>::finished, this, [&] {
+		//执行完后的操作
+		qDebug() << "2.2 current thread id:" << QThread::currentThreadId();
+		QVERIFY(main_thread_id == QThread::currentThreadId());
+	});
+	QFuture<void> future = QtConcurrent::run([=]()
+	{
+		//执行的操作
+		qDebug() << "2.1 current thread id:" << QThread::currentThreadId();
+		QVERIFY(main_thread_id != QThread::currentThreadId());
+	});
+	future_wathcher->setFuture(future);
+	QEventLoop loop;
+	QTimer::singleShot(20, [&] {loop.exit(); });
+	loop.exec();
 }
 
