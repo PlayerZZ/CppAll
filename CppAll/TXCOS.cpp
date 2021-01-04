@@ -1,10 +1,22 @@
 #include "TXCOS.h"
-
+#include <QSettings>
 //简易实现腾讯cos
+
 TXCOS::TXCOS(const QString& region, const QString& appid, const QString& bucket, QString& SecretID, const QString& SecretKey, const QString& token/*=""*/)
 	:_region(region), _appid(appid),_bucket(bucket), _sid(SecretID), _skey(SecretKey), _token(token)
 {
 
+}
+
+TXCOS::TXCOS()
+{
+	QSettings server_config("server_config", QSettings::IniFormat);
+	//读取配置文件进行初始化
+	_region = server_config.value("server/region").toString();
+	_sid = server_config.value("server/secret_id").toString();
+	_skey = server_config.value("server/secret_key").toString();
+	_bucket = server_config.value("server/bucket").toString();
+	_appid = server_config.value("server/appid").toString();
 }
 
 TXCOS::~TXCOS()
