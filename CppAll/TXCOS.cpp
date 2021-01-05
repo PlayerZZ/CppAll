@@ -37,6 +37,7 @@ bool TXCOS::sendFile(const QString& filename,const QString& uri)
 
 bool TXCOS::sendFile(QByteArray data, const QString uri)
 {
+	//initMultipartUpload(uri);
 	QString _uri = uri;
 	if (_uri[0] != '/')
 	{
@@ -57,6 +58,7 @@ bool TXCOS::sendFile(QByteArray data, const QString uri)
 
 	auto res = client.Put(_uri.toUtf8(), header, data.size(), provider, "");
 	qDebug() << "send file res:" << res->body.c_str();
+	
 	return true;
 }
 
@@ -65,7 +67,7 @@ QString TXCOS::gethost()
 	return QString("%1-%2.cos.ap-%3.myqcloud.com").arg(_bucket).arg(_appid).arg(_region);
 }
 
-QString TXCOS::geturl(const QString& filename, const QMap<QString, QString>& parameters = {})
+QString TXCOS::geturl(const QString& filename, const QMap<QString, QString>& parameters)
 {
 	QString _filename = filename;
 	if (filename[0]=='/')
@@ -85,7 +87,7 @@ QString TXCOS::geturl(const QString& filename, const QMap<QString, QString>& par
 	return uri;
 }
 
-QString TXCOS::getauth(const QString& filename, const QString& method, const QMap<QString, QString>& parameters = {})
+QString TXCOS::getauth(const QString& filename, const QString& method, const QMap<QString, QString>& parameters)
 {
 	QString parameter_keys = parameters.keys().join(';');
 	QStringList key_values;
@@ -126,4 +128,53 @@ QString TXCOS::getauth(const QString& filename, const QString& method, const QMa
 		.arg(_sid).arg(time_str).arg("host").arg(parameter_keys).arg(signature);
 	return auth;
 
+}
+
+QString TXCOS::initMultipartUpload(const QString& uri)
+{
+	QString _uri = uri;
+	//make header
+
+	//make url
+	if (_uri[0] != '/')
+	{
+		_uri = "/" + _uri;
+	}
+	QMap<QString, QString> parameters = { {"upload",""} };
+	QString auth = getauth(uri, "post", parameters);
+	httplib::Headers header = { { "host",gethost().toStdString() },{ "Authorization",auth.toStdString() } };
+
+
+	httplib::Client client(gethost().toStdString());
+	client.set_read_timeout(30, 100);
+
+	QString _uri_p = _uri + "?uploads";
+	auto res = client.Post(_uri_p.toStdString().c_str(), header, "", "");
+	//TODO: 还是有点问题现在 空了再整吧
+	QString upload_id;
+	//解析
+	if (res)
+	{
+		tinyxml2::XMLDocument doc;
+		auto ret = doc.Parse(res->body.c_str());
+		QString key_first = doc.FirstChildElement()->Name();
+		if (key_first.toLower() == "error")
+		{
+			qDebug() << "failed init MultipartUpload\n" << QString::fromStdString(res->body);
+			return false;
+		}
+		auto a1 = doc.FirstChildElement("InitiateMultipartUploadResult")->FirstChildElement("Bucket")->GetText();
+		upload_id = doc.FirstChildElement("InitiateMultipartUploadResult")->FirstChildElement("UploadId")->GetText();
+		if (upload_id == "")
+		{
+			qDebug() << "failed init MultipartUpload\n" << QString::fromStdString(res->body);
+			return false;
+		}
+		return true;
+	}
+	else {
+		qDebug() << "failed init MultipartUpload\n";
+		return false;
+	}
+	return upload_id;
 }
