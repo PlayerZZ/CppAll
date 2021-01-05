@@ -6,6 +6,7 @@
 #include <tinyxml2.h>
 #include <QDateTime>
 #include "ch_tools.h"
+#include <QMap>
 class TXCOS : public QObject
 {
 	Q_OBJECT
@@ -26,6 +27,6 @@ private:
 	QString _token;
 	QString _host;
 	QString gethost();
-	QString geturl(const QString& filename);
-	QString getauth(const QString& filename,const QString& method ="put");
+	QString geturl(const QString& filename, const QMap<QString, QString>& parameters = {});
+	QString getauth(const QString& filename, const QString& method = "put", const QMap<QString,QString>& parameters = {});
 };

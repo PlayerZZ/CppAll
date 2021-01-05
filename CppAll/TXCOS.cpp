@@ -65,18 +65,35 @@ QString TXCOS::gethost()
 	return QString("%1-%2.cos.ap-%3.myqcloud.com").arg(_bucket).arg(_appid).arg(_region);
 }
 
-QString TXCOS::geturl(const QString& filename)
+QString TXCOS::geturl(const QString& filename, const QMap<QString, QString>& parameters = {})
 {
 	QString _filename = filename;
 	if (filename[0]=='/')
 	{
 		_filename = filename.mid(1);
 	}
-	return QString("https://%1-%2.cos.ap-%3.myqcloud.com/%4").arg(_bucket).arg(_appid).arg(_region).arg(_filename);
+	QString uri = QString("https://%1-%2.cos.ap-%3.myqcloud.com/%4").arg(_bucket).arg(_appid).arg(_region).arg(_filename);
+	if (parameters.size())
+	{
+		QStringList ps;
+		for (auto &p:parameters)
+		{
+			ps << (p + "=" + parameters[p]);
+		}
+		uri += "?" + ps.join("&");
+	}
+	return uri;
 }
 
-QString TXCOS::getauth(const QString& filename, const QString& method)
+QString TXCOS::getauth(const QString& filename, const QString& method, const QMap<QString, QString>& parameters = {})
 {
+	QString parameter_keys = parameters.keys().join(';');
+	QStringList key_values;
+	for (auto& p : parameters.keys())
+	{
+		key_values<< (p + "=" +parameters[p]);
+	}
+	QString parameter_key_values = key_values.join("&");
 	//根据当前时间获取时间
 	QDateTime time_beg = QDateTime::currentDateTime();
 	//十分钟过期
@@ -90,7 +107,7 @@ QString TXCOS::getauth(const QString& filename, const QString& method)
 	QString http_str = QString("%1\n%2\n%3\n%4\n")
 		.arg(method)
 		.arg(filename)
-		.arg("")
+		.arg(parameter_key_values)
 		.arg(QString("host=%1").arg(gethost()));
 	//put\n/1.png\n\ncontent-md5=34%2B%2B3lUUNnRVx6roO06kZw%3D%3D&host=data-1300298607.cos.ap-chengdu.myqcloud.com\n
 	//3. 生成 StringToSign
@@ -106,7 +123,7 @@ QString TXCOS::getauth(const QString& filename, const QString& method)
 	//5. 拼接 Authorization
 	//q-sign-algorithm=[q-sign-algorithm]&q-ak=[SecretId]&q-sign-time=[q-sign-time]&q-key-time=[q-key-time]&q-header-list=[q-header-list]&q-url-param-list=[q-url-param-list]&q-signature=[q-signature]
 	QString auth = QString("q-sign-algorithm=sha1&q-ak=%1&q-sign-time=%2&q-key-time=%2&q-header-list=%3&q-url-param-list=%4&q-signature=%5") \
-		.arg(_sid).arg(time_str).arg("host").arg("").arg(signature);
+		.arg(_sid).arg(time_str).arg("host").arg(parameter_keys).arg(signature);
 	return auth;
 
 }
