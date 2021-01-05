@@ -14,7 +14,9 @@ public:
 	TXCOS(const QString& region,const QString& appid,const QString& bucket,QString& SecretID,const QString& SecretKey,const QString& token="");
 	TXCOS();
 	~TXCOS();
-	bool sendFile(const QString& filename);
+	bool sendFile(QByteArray data, const QString uri);
+	bool sendFile(const QString& filename,const QString& uri="");
+	
 private:
 	QString _region;
 	QString _appid;
