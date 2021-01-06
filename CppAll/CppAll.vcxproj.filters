@@ -38,6 +38,9 @@
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="C++ Primer">
+      <UniqueIdentifier>{2d4e285b-73b1-4c1d-a0c3-5433be8a6add}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -97,6 +100,9 @@
     <ClCompile Include="Tasker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BaseClassA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.h">
@@ -139,6 +145,15 @@
     </ClInclude>
     <ClInclude Include="tinyxml2.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseClassA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cpp_primer.h">
+      <Filter>C++ Primer</Filter>
+    </ClInclude>
+    <ClInclude Include="other1.h">
+      <Filter>C++ Primer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -7,6 +7,7 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include <QFutureWatcher>
 #include <TXCOS.h>
+#include "cpp_primer.h"
 UnitTest::UnitTest(QObject *parent)
 	: QObject(parent)
 {
@@ -158,5 +159,11 @@ void UnitTest::test_TxCos()
 {
 	TXCOS cos;
 	QVERIFY(cos.sendFile("Resources/wechat.jpg"));
+}
+
+void UnitTest::test_cpp_primer()
+{
+	chapter1();
+	chapter2();
 }
 
