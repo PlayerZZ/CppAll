@@ -158,5 +158,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="vs快捷键.txt" />
+    <Text Include="sale_data.txt" />
+    <Text Include="sale_data2.txt" />
   </ItemGroup>
 </Project>

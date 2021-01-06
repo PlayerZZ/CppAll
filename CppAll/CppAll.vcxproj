@@ -220,6 +220,8 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <Text Include="sale_data.txt" />
+    <Text Include="sale_data2.txt" />
     <Text Include="vs快捷键.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
