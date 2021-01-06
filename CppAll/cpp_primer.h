@@ -194,4 +194,137 @@ inline void chapter2(){
 #endif
 }
 
+inline void chapter3()
+{
+	//3.1 使用命名空间
+	{
+		using namespace std;
+		cout << "";
+		//头文件中不应该用using namespace ，因为可能造成名字冲突
+	}
+	//3.2 使用string
+	{
+		string s1 = "sgsg";
+		string s2(10, 'a');
+		string s3 = { 10,'b' };
+		string s4{ 10,'c' };
+
+		//直接初始化 是指不用 = 号的初始化
+		string s5{ "sgg" };
+		//拷贝初始化是指用 = 号的初始化
+		string s6 = "heloo";
+		//多个值一般用一个临时对象来拷贝初始化比较直观 比如s3
+		string s7 = string(10, 'd');
+		//string的操作函数
+		cout << s1;
+		//cin >> s2;
+		//getline(cin,s3);
+		s4.empty();
+		auto size_t1 = s5.size();//是一个unsigned 类型的
+		s6[0];
+		s1 + s2 == s3 + s4;
+		"s6" + s6;//因为操作符可以推断前面的为string,但是要两侧至少有一个string 才能转换
+		//字符串字面值 并不是string 类型
+		//字符的操作
+		char c = '0';
+		isalnum(c);//is alpha numuber?
+		isalpha(c);
+		isdigit(c);
+		iscntrl(c);
+		isgraph(c);//非空格符
+		isspace(c);//空白字符
+		islower(c);
+		isupper(c);
+		isprint(c);//可打印
+		isxdigit(c);//16进制
+		tolower(c);
+		toupper(c);
+		//范围for 循环
+		for (auto& c:s1)
+		{
+			c = toupper(c);
+		}
+		//下标越界的操作未定义
+
+	}
+	//3.3 使用vector
+	{
+		//类模板 只有定义时才会进行“模板类的实例化操作”
+		vector<string> v1 = { 10,"abc" };
+		vector<string> v2 = { "aaa","bbb","ccc" };
+		//vector<string&> v3;//不能使用引用的容器，而且因为编译期间才会检查，所以编写的时候居然也不报错……
+		vector<vector<int> > v4;//c++11之前都要多加一个空格在>>中间 不然会被认为是流输出符哈哈
+		//定义与初始化
+		vector<int> t1;
+		vector<int> t2(t1);
+		vector<int> t3 = t1;
+		vector<int> t4(10, 110);//第一个为个数，第二个为初始化参数
+		vector<int> t5(10);//初始化10 个 0
+		vector<int> t6 = { 10,10 };
+		vector<int> t6_1 = { size_t(10),10};//这样会不会有歧义？ 到底是1个2 还是1,2 两个元素 发现就是两个元素 原因不明
+		//原因明了 是因为它会直接当成列表 除非是执行不了 才会当作其他的 比如(n,value)
+		vector<int> t7{ 5,6,7,8 };
+		//添加元素
+		t6.push_back(9);
+		//如果要添加元素 不能使用范围for 循环 因为内部的指针“可能”会断掉
+		//vector 操作
+		t1.empty();
+		vector<int>::size_type size_t_3;//是模板实例化的属性对象
+		auto size_t_2 = t2.size();
+		t4.push_back(10);
+		t5[0];
+		t6 = { 10,11,13 };
+		//t7 = t5 + t6; //没有+ - 操作
+		//如果对象没有定义 > < 等操作，就没法对两个vector进行比较操作
+	}
+	//3.4 迭代器
+	{
+		vector<string> v_s(10, "abc");
+		auto b = v_s.begin();
+		auto e = v_s.end();//尾后
+		//标准容器 迭代器运算
+		*b;
+		b->size();//解引用使用成员
+		++b;
+		--b;
+		b == e;
+		b != e;
+		//泛型的原因 用== 和!= 比较多
+		//迭代器种类
+		vector<string>::iterator it = v_s.begin();
+		vector<string>::const_iterator cit = v_s.cbegin();
+		it += 5;
+		//vector 和string 迭代器另外支持的操作
+		
+		it + 2;
+		it - 2;
+		it += 2;
+		it -= 2;
+		it - b;
+		//各种比较运算
+		auto mid = v_s.begin() + v_s.size() / 2;
+	}
+	//3.5 数组
+	{
+		//复杂的数组声明
+		int *ptr[10];// 变量名的右结合，除非遇到括号
+		//数组和指针 数组也有尾后指针
+		//可以使用begin
+		int array[10] = { 1,2,3,4 };
+		auto b = begin(array);
+		auto e = end(array);
+		//c 字符串也是数组
+		char str[20] = "hello";
+		char str2[10] = "world";
+		strlen(str);
+		strcmp(str, str2);
+		strcat(str, str2);
+		strcpy(str, str2);
+		//数组初始化vector
+		vector<char> vc(begin(str), end(str));//但是这个结果是啥呢…… 结果很好玩，因为它本身到world\0 就结束了，所以之前的也没有清零哈哈
+		int i = 0;
+		//多维数组 使用范围for 循环 要使用auto & 不然就降级为指针，就不好用了
+		//多维数组内部不一定是连续的，所以其实就是多个数组的集合
+	}
+}
 
