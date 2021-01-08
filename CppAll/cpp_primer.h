@@ -482,3 +482,107 @@ inline void chapter4()
 	}
 }
 
+//语句
+inline void chapter5()
+{
+	//5.1 简单语句
+	{
+		//表达式语句
+		int a = 9;
+		//空语句
+		;
+		//复合语句
+
+	}
+	//5.2 语句作用域
+	{
+		int a = 0;//花括号内 而且swtich if 是每个case都算是一个花括号，所以……case最好加花括号
+	}
+	//5.3 条件语句
+	{
+		//当有垂悬else的时候，最好还是用花括号，毕竟不像python 是通过缩进控制范围的
+		if (false)
+			if (false)
+				int i = 0;
+		else
+			int t = 0;
+			
+		//不过这个也看编译器 vs的话强制你不能换行哈哈
+		//swtich 语句
+		char contorl = 'c';
+		switch (contorl)
+		{
+		case 'a': case 'b':case 'c':
+			cout << "contrl type";
+			int a = 0;
+			break;
+		case 'd':case'f':
+			a = 10;
+			cout << "hehe";
+			break;
+		default:
+			break;
+		}
+		// case d中知道a ，但是没有a的初始值，没有被正确初始化，需要加个初始化 ，最后就是直接用花括号，避免名字冲突
+		// 因为反正都用不了 a 中的变量值
+	}
+	//5.4 迭代语句
+	{
+		//while 语句
+		int num;
+		ifstream fin("sale_data.txt");
+		string text;
+		while (fin >> num) {
+			cout << num;//如果读失败 其实是返回一个ostream 但是可以转换为bool 对象，提供了相应的转换操作的
+		}
+		//for 循环
+		for (int i = 0; i < 10; i++) {
+			i += 5;
+		}
+		//范围for 循环
+		string str("hello");
+		for (auto &c : str) {
+			c += 1;//当做整数类型计算
+		}
+		//do .. while 先干上一遍再说
+		do {
+			string str = { "stupid" };
+		} while (false);
+	}
+	//5.5跳转语句
+	{
+		//相当于非顺序执行
+		// break; 只能跳出当前循环 或者switch case的case
+			//如果想连续跳出 又不跳出最外层，可以使用某个变量来控制
+		// continue 不继续执行 直接下一个轮回吧哈哈
+		//goto 语句 因为太不安全 就一直不用了哈哈
+			//因为跳过了声明，直接使用那个代码段就会报错……
+	}
+	//5.6 try 语句块和异常处理 
+	{
+		try {
+			throw("just try try throw a exception");
+		}
+		catch (exception e){
+			cout << "let me see see,what exception:" << e.what();
+		}
+		//c++ 中没有finally哦 所以得利用析构函数的特性去做一些关闭应该做的事情
+// 		finally {
+// 			
+// 		}
+		//标准异常库
+		//exception 最常见异常
+		//runtime_error 在运行时才能检测出的错误
+		//range_error 运行时错误，计算超过范围
+		//overflow_error 运算上溢
+		//underflow_error 运算下溢
+		//logic_error 程序逻辑错误
+		//domin_error 参数结果不存在?
+		//invalid_argument 无效参数
+		//length_error 超过最大的长度
+		//out_of_range 使用超过有效范围的值
+
+	}
+
+
+}
