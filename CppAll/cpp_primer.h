@@ -4,6 +4,8 @@
 #include <iostream>
 #include "other1.h"
 #include <fstream>
+#include <initializer_list>
+#include <stdarg.h>
 using namespace std;
 inline void chapter1() {
 	
@@ -585,4 +587,138 @@ inline void chapter5()
 	}
 
 
+}
+//函数
+inline void chapter6()
+{
+	//6.1 函数基础
+	{
+		// 	int func(int a, int b) {
+		// 		return a + b;
+		// 	};
+			//函数1 返回值 参数 函数体
+		auto functiona = [&](const int &a, const int &b) ->decltype(a + b) {return a + b; };
+		//主调函数和 被调函数
+		auto functionb = [&] {return functiona(10, 20); };
+		//形参和实参 调用的时候外面的参数是实参，但是调用的函数名内部是形参
+		int i1 = 100, i2 = 200;
+		auto i3 = functiona(i1, i2);//i1,i2 是实参，a,b 是形参
+		//函数不能返回 数组 和 函数类型 ，但是可以返回其指针(数组指针和函数指针)
+		//局部对象
+		//生命周期
+		//形参和函数体内部的参数 都是局部变量 
+			//但是动态分配的对象通过指针可以在外层一直存在
+		//局部对象对外层是隐藏的
+		//自动对象
+			//只存在局部 调用完自动销毁的对象
+			//形参也属于这个范畴
+		//局部静态变量
+		auto functionc = [&]() {static int cnt = 1; return cnt++; };
+		functionc();//第一次执行时初始化
+		functionc();//之后只会调用，不会再进行初始化操作
+		auto cnt = functionc();
+		//函数声明 头文件中进行函数声明
+		//函数原型 
+		// 分离式编译 
+		//编译和链接多个文件
+		//有main 函数可以生成可执行文件
+		//单独编译为.o 文件 cc -c xxx.cc
+		//cc xxx.o 依赖.o -o main//生成main.exe 或者linux的执行文件
+	}
+	//6.2 参数传递
+	{
+		//参数为 引用时 引用传递 被引用调用
+			//可以避免拷贝发生
+			//返回额外的值
+				//毕竟函数只能返回一个值
+		//参数为 普通传值 值传递 传值调用
+			//不会改变外层的实参的值
+				//不过也看那个对象有没有实现深拷贝之类的
+				//如果对象内部有指针形式的 还是会改变值的
+		//指针形参 也可以改变外层的值
+		//const 形参
+		// 顶层const 会被忽略，认为是同一函数，不会构成重构，会报错
+		//指针或引用与const
+// 		int *p1 = 1;//不行
+// 		const int *const p2 = 1;
+		const int &yinyong = 1;//因为右侧会形成一个const 对象
+		//数组形参 只能表示期望，并不能一定接受到这么大的数组 等价于一个指针
+			//指定某个元素作为结尾
+				//字符串就是 \0 结尾
+			//使用begin end 函数
+			//传递长度作为参数
+		//数组可以作为引用…… 只是写起来有点麻烦
+		auto functiona = [](int(&arr)[10]) {
+			for (auto &a : arr) {
+				cout << a;
+			} 
+		};
+		//所以也可以是const的 引用
+		//多维数组 忽略第一维度 为指针
+		auto functionb = [](int(&arr)[10][20]) {
+			//所以其实也可以用引用?
+		};
+		//main 函数 中处理命令参数
+		//int main(int argc,**argv); //其实就是我们说的第三种 传递了一个长度argc 进来
+		//含有可变形参的参数
+		initializer_list<int> a1{1,2,3};
+		auto s1= a1.size();
+		auto s2 = a1.begin();
+		initializer_list<int> a2 = a1;//元素将会共享 不会拷贝,因为是常量，反正不会修改，拷贝也没意义哈哈
+		//局限性，只能使用一种值
+		
+		//使用省略符 https://my.oschina.net/SHIHUAMarryMe/blog/793155
+		//c++ primer 就这么点 网上找到一个博客基本满足需求了
+		auto functionc = [](const int& num, ...) {
+			//但是这个...如何解析呢？ 好像要使用递归来着
+			va_list args;//相当于是一个内存池，然后里面各种类型都有
+			int a = 0;
+			va_start(args, a);
+			va_list args2;
+			va_copy(args2,args);
+			va_end(args);//复制为0 表示不可调用了
+			//关键是还得自己来推断到底是什么类型…… 恐怕不用模板是不好用的了
+		};
+	}
+	//6.3 返回类型和return 语句
+	//返回值为引用或者指针的时候，要想一下是否这个值只是函数内部的，如果是就不行，如果不是可以
+	//返回引用的时候可以看作一个左值
+	//可以返回 return {"",""} 这样的
+	//返回数组的指针  写起来超绕 尾置返回类型
+	//auto func() -> int(*)[10] {} //范湖一个 int[10] 的指针
+	
+	//6.4 函数重载
+	{
+		//const_cast在非常函数中 使用常函数，并且返回非常变量（通常为引用）的时候还是有用的。
+		//最佳匹配和 二义性
+		// 名字冲突 不同的作用域会造成名字覆盖 无法构成函数重载
+
+	}
+	//6.5 特殊语言特性
+	{
+		//默认参数
+		//内联函数和 constexpr
+		//调试帮助 
+		assert(11 == 11);
+		//NDEBUG宏
+	}
+	//6.6函数匹配
+	{
+		//有二义性性的时候，可以指定函数类型来消除二义性 写起来有点麻烦就是了
+
+	}
+	//6.7 函数指针
+	{
+		//bool (*p)(int,int)
+		//重载函数对根据函数指针的声明 来匹配对应的参数
+		//所以上面其实就是转为特定的函数指针就行了
+		//static_cast<void(*QMaincWindow::)(int)>(&MainWindow::clicked) 
+			//因为clicked 有两个信号 所以得这样的来声明
+		//返回 函数指针的 函数 这个就更绕了
+		//int (*p(int))(int)
+			//写成尾置返回类型 就清楚了
+			// auto p(int) -> int(*)(int)
+		//decltype 作用域函数 返回的是函数类型 而非指针…… 所以还得自己解一下
+
+	}
 }
