@@ -1170,11 +1170,15 @@ inline void chapter10(){
 			auto equal_result2 = equal(str_vec1.begin(), str_vec1.end(), str_vec3.begin(), str_vec3.end());//定义了这个就不会判断它够不够长了？
 			try
 			{
-				auto equal_result3 = equal(str_vec1.begin(), str_vec1.end(), str_vec3.begin()); //会直接报错
-				//而且还catch 不到？
+				//auto equal_result3 = equal(str_vec1.begin(), str_vec1.end(), str_vec3.begin()); //会直接报错
+				//而且还catch 不到？ 
 			}
-			catch (out_of_range e)
+			catch (out_of_range e) {
+				string str = e.what();
+			}
+			catch (std::exception e)
 			{
+				//todo 都捕获不到
 				string str = e.what();
 			}
 
