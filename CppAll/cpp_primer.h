@@ -17,6 +17,7 @@
 //#include <concurrent_priority_queue.h> 这是个什么玩意？
 //#include <priority_queue> //这个又包含不了
 #include <algorithm>
+#include <functional>
 using namespace std;
 
 inline void chapter1() {
@@ -1127,6 +1128,8 @@ inline void chapter9()
 	}
 }
 
+int my_add1(int a, int b) { return a + b; }
+int my_add2(int &a, int b) { return a + b; }
 //第十章 泛型算法
 inline void chapter10(){
 	//概述 直接在algorithm 头文件里面
@@ -1178,10 +1181,167 @@ inline void chapter10(){
 			}
 			catch (std::exception e)
 			{
-				//todo 都捕获不到
+				//todo 都捕获不到 看了下 是所谓的严重错误
 				string str = e.what();
 			}
 
 		}
+		//写容器操作
+		{
+			vector<int> vec_int1 = { 1,2,3,4,5 };
+			fill_n(vec_int1.begin(), vec_int1.size(), 10);//全部置为0
+			//插入迭代器 迭代器提供了插入的功能……
+			
+			vector<int> vec_int2;
+			auto bi_it = back_inserter(vec_int2);
+			fill_n(back_inserter(vec_int2), 10, 20);//这个就相当于插入操作了 因为迭代器具有的是插入功能……
+			//拷贝算法
+			//copy(vec_int1.begin(), vec_int1.end(), vec_int2);//这个不用迭代器了 ？所以还是有直接使用容器的操作吗
+			copy(vec_int1.begin(), vec_int1.end(), vec_int2.begin());//所以怎样都可以？
+			//反正加上back_inserter 就不一样了
+			//替换操作
+			replace(vec_int1.begin(), vec_int1.end(), 0, 40);//更换为
+			replace_copy(vec_int1.begin(),vec_int1.end(),vec_int2.begin(),3,40);//将替换后的结果存放在vec_int2 中，但是呢其大小并没有改变吧
+			replace_copy_if(vec_int1.begin(), vec_int1.end(), vec_int2.begin(), [](const int& num) { return num == 10; },100);//替换后的值在最后一个
+			//还是那句话 如果使用back_inster 就不一样了
+		}
+		{
+			//重排操作
+			vector<int> v_i = { 1,2,3,4,6,7,57,5,25,2,2,4,6,7 };
+			sort(v_i.begin(), v_i.end());
+			auto it_unique = unique(v_i.begin(), v_i.end());
+			v_i.erase( it_unique, v_i.end());//删除重复元素 
+		}
+	}
+	{
+		//10.3 定制操作
+		// 谓词 predicate 其实就是动词 其实就是函数
+		vector<int> v_i = { 1,2,3,4,5,6 };
+		//排序为 偶数比较大
+		sort(v_i.begin(), v_i.end(), [](const int& i1, const int& i2) {
+			if (i1%2)
+			{
+				if (i2%2)
+				{
+					return i1 < i2;
+				}
+				return false;
+			}
+			else if (i2 % 2)
+			{
+				return true;
+			}
+			else {
+				return i1 < i2;
+			}
+		});
+		//返回{2,4,6,1,3,5} 但是如何倒序呢？ 传一个大于操作符就去就行了 true 的意思是排在前面
+		for_each(v_i.begin(), v_i.end(), [](const int& i) {
+			//其实就是一个范围for 循环 有区别吗？ 如果使用引用的话，其实没有区别
+		});
+		//所谓的lambda 表达式 值捕获 其实就是[]中的东西 ，反正啊，一般都是直接使用& 当然如果是局部对象，使用= 
+			//如果是内里面，嘿嘿，使用this 指针就行了
+			//比较麻烦的值捕获 [&,p1,p2] 除了p1,p2 用拷贝，其余用引用 [=,p1,p2] 同理
+			//默认是const 捕获拷贝的变量
+				//所以得使用 [p1] () muable {return ++p1;}; 这样的写法
+		//参数绑定 据说不是很好用 c++11 之后都直接使用lambda 完成参数绑定了
+			//但是万一写模板类的时候要用呢？ 还是看一下好了
+// 		auto test_func = [](int a,int b) {return a + b; };
+// 		auto test_func2 = [](int& a, int b) {return a + b; };
+		auto func1 = bind(my_add2, 1, placeholders::_1);//原来这个placeholders 是调用的时候，外层的第几个参数……
+		//绑定引用对象
+		func1(1);//绑定了个寂寞？
+		int a = 10;
+		//auto func2 = bind(my_add2, a, placeholders::_1);//这里做了一个拷贝动作 不想要这个拷贝 直接引用就得使用ref
+		auto func2 = bind(my_add2, ref(a), placeholders::_1);
+		auto val1 = func2(100);
+	}
+	{
+		
+		//再探迭代器
+			//倒也不是说迭代器无用吧 至少说这种思路是可以的，自己以后写代码可以参照这种思路
+		//插入迭代器
+		{
+			vector<int> vi;
+			auto it = back_inserter(vi);
+			it = 10;
+			it = 101;
+			it = 102;
+			auto value1 = *it; 
+			auto value2 = ++it;
+			auto value3 = it++;//这三个操作都只是返回它本身 不会真的加 也不会
+// 			if (value1 == value2 == value3)
+// 			{
+//				//还没有判等操作……
+// 				string str = "yes";
+// 			} 
+// 			auto front_it =front_inserter(vi); //这个必须要有push_front 的容器才能用
+// 			front_it = 99;
+			inserter(vi, vi.begin() + 2) = 88;//其实就是内部调用 insert 方法吧喂
+		}
+		//流迭代器
+		{
+			//iostream 居然也有迭代器？
+			istringstream istr("hello world what fuck");
+			//干 空值就是eof
+			istream_iterator<string> in(istr),eof;
+			//所以怎么判断它到了结尾没有呢？
+			//用不了啊 
+// 			istream_iterator<string>::end;//莫得这个 所以这个是没有实现迈
+// 			for (in != eof)
+// 			{
+// 				string str = *in;
+// 			}
+ 			string str = *in++; 
+			str = *in++;
+			//auto sum = accumulate(in, eof, 0); 还是不行 因为压根不能判等
+
+			ostream_iterator<string> oit(cout," !!!\n");
+			oit = "what";
+			oit = "the";
+			oit = "hello";
+		}
+		//反向迭代器
+		{
+			//需要迭代器支持-- 操作
+			//一切都要反着来
+			string str1("hellom,world");
+			auto rpos = find(str1.rbegin(), str1.rend(), ',');
+			string str2(str1.rbegin(), rpos);
+		}
+		//移动迭代器	不在这一章讲
+		
+
+	}
+	//泛型算法结构
+	{
+		//分类
+
+		//输入迭代器
+			//只读 不写 单遍扫描 只能递增
+			//解引用只能取值 不能当做左值
+		//输出迭代器
+			//只写 不读 单遍扫描 只能递增
+			//解引用只能作为左值
+		//前向迭代器
+			//可读写 多遍扫描 只能递增
+		//双向迭代器
+			//可读写 多遍扫描 可递增，可递减
+		//随机访问迭代器
+			//可读写 多遍扫描 支持全部迭代器操作
+				//意思是可以 +n操作
+		//算法形参模式
+		//算法的命名
+			//要么通过重载 支持自定义函数
+			//要么通过_if 版本支持
+			//还有带_copy 版本的会赋值给另外一个对象
+	}
+	//10.6 特定容器算法
+	{
+		//sort 要求随机访问迭代器
+		list<int> list1{ 1,2,3,4,5 };
+		list<int> list2{ 6,7,8,9,10 };
+		list1.splice(list1.end(),list2);
+		//相当于 inster 只不过是链表的 有点像move函数哈哈
 	}
 }
