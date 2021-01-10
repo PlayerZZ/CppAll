@@ -33,3 +33,5 @@ VA快捷键
 查找符号 ctrl + shift + f
 
 ctrl + shift + enter 换新行
+到成对的[] () {} 括号后面 ctrl + ]
+文件末尾 ctrl + end

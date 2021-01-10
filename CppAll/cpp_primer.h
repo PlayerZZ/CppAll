@@ -6,7 +6,19 @@
 #include <fstream>
 #include <initializer_list>
 #include <stdarg.h>
+#include <sstream>
+#include <vector>
+#include <deque>
+#include <forward_list>
+#include <list>
+#include <array>
+#include <stack>
+#include <queue>
+//#include <concurrent_priority_queue.h> 这是个什么玩意？
+//#include <priority_queue> //这个又包含不了
+#include <algorithm>
 using namespace std;
+
 inline void chapter1() {
 	
 	//1.1 complie
@@ -402,7 +414,7 @@ inline void chapter4()
 	//4.5 递增和递减
 	{
 		int i = 0, j;
-		j == ++i;
+		j = ++i;
 		string str1 = "test";
 		auto str_iter = str1.begin();
 		while (str_iter!=str1.end())
@@ -511,20 +523,22 @@ inline void chapter5()
 			
 		//不过这个也看编译器 vs的话强制你不能换行哈哈
 		//swtich 语句
-		char contorl = 'c';
-		switch (contorl)
-		{
-		case 'a': case 'b':case 'c':
-			cout << "contrl type";
-			int a = 0;
-			break;
-		case 'd':case'f':
-			a = 10;
-			cout << "hehe";
-			break;
-		default:
-			break;
-		}
+// 		char contorl = 'c';
+// 		switch (contorl)
+// 		{
+// 		case 'a': case 'b':case 'c':
+// 			cout << "contrl type";
+// 			int a = 0;
+// 			break;
+// 		case 'd':case'f':
+// 			a = 10;
+// 			cout << "hehe";
+// 			break;
+// 		default:
+// 			a = 100;
+// 			break;
+// 		}
+		//直接编译不过
 		// case d中知道a ，但是没有a的初始值，没有被正确初始化，需要加个初始化 ，最后就是直接用花括号，避免名字冲突
 		// 因为反正都用不了 a 中的变量值
 	}
@@ -720,5 +734,450 @@ inline void chapter6()
 			// auto p(int) -> int(*)(int)
 		//decltype 作用域函数 返回的是函数类型 而非指针…… 所以还得自己解一下
 
+	}
+}
+
+class NormalClass {
+public:
+	int add(const int& a, const int& b) const { return a + b; };
+	//难道内联的不能这么用?
+	int add(const int& a, const int& b) {
+		//使用const 形的 为啥要转为引用呢？ 而不转为常指针呢 因为太长了啊……
+		//return static_cast<const NormalClass *const>(this)->add(a, b);
+		//通常还要加一个const_cast
+		return static_cast<const NormalClass &>(*this).add(a, b);
+	};
+	int sum = 10;
+};
+
+//第7章 类
+inline void chapter7() {
+	//数据抽象
+		//接口
+			//对外暴露的可调用函数
+		//实现 分离式编程
+			//成员变量 函数体
+	//封装
+		//实现了这种分离
+	//7.1 定义抽象数据类型
+	//类的用户是程序员
+	//程序的用户才是真的用户
+	//const 成员函数
+	//函数返回this指针，返回值为为它的引用 这样就可以使用链式调用 a.b().c().d() 这样的
+
+	//类的非成员函数
+		//需要输入 输出这样的，毕竟不是每个成员都需要自我介绍之类的对吧
+		//这类函数的特点呢 就是不止作用这个类
+		//具有普遍性
+	
+	//构造函数
+		//默认构造函数
+			//没有其他构造函数会生成一个无参数的默认构造函数
+			// = default 也可以直接生成这个函数
+	//友元 即使是外部对象也可以访问类内部的方法，或者函数，或者类
+	//拷贝 赋值 和 析构
+	//todo 具体的生成方法 应该后面会有的
+	//7.2访问控制与封装
+	{
+		//访问控制符 public private protect
+		//strurct 和class 在c++ 里面只是默认的访问权限不同	
+			//然而struct 却会生成一个通过整体成员的 构造函数
+		//
+	}
+	//7.3 类的其他特性
+	{
+		//类成员再探
+		//类的专属类型
+		class Screen {
+		public:
+			typedef std::string::size_type pos;
+		private:
+			pos cursor = 0;
+			mutable pos mutable_asset=0;//即使在const 中也是可以修改的值，叫做可变数据成员
+		};
+		//screen 的成员函数
+		//const 和非 const 函数的代码复用 
+			//抽象成一个真正的do_sth 函数,然后它是const的
+				//在非const 内部调用时，会发生隐式类型转换
+		//类对象的生成
+			//前向申明 头文件中只用到了其指针或者引用，没有具体的使用的时候，可以先告诉头文件有这么名字，之后会看到的
+				//class classa; //放在头文件前面 不用先include 这个类
+		//友元再探
+		//类之间的友元关系
+		//但是这种友元是单向关系，A 是 B的友元，A 怎么知道，B 至少是知道的
+		//我知道了 B 知道 然后A include B  然后A就知道了
+		//类成员函数 申明为友元其实也是一样的套路
+			//所以这样的话 其实A 也要include B 才行了？
+		//友元作用域 其实也就是要先知道这个名字才能申明为友元的
+	}
+	//7.4 类的作用域
+	{
+		//其实就是头文件和 源文件中实现时要添加类名
+		//this 指针可以避免 形参和成员变量名重复的问题
+		// 所以类内初始化 列表初始化 同时存在时 类内初始化还执行不
+		//如果含有const 或者引用 必须要赋值 所以通常得自己写一个
+		//初始化顺序与定义的一致
+
+	}
+	//转换构造函数 ，有一步是发生了隐式类型转换的
+		//explicit 必须显示的调用构造函数才能变成这个对象
+		//还可以使用static_cast<class> 转换过去
+	//字面值常量类
+		//含有至少一个constexpr 构造函数
+
+	//类的静态成员
+	//加上static 关键字即可
+	//如果要类内初始化 要使用constexpr 但是这样又不可修改了
+	//静态成员函数 可以作为成员函数的默认参数
+	//委托构造函数 就是可以使用别的构造函数进行委托生成类
+}
+
+//第八章 IO库
+inline void chapter8()
+{
+	//iostream fstream cin,cout,cerr >>  << getline
+	//读写宽字符
+	//sstream 与字符串相关的流 wcin wcout wcerr wstring 呢，有没有？
+	//继承机制 ifstream istringstream
+	//io 对象无拷贝 或者赋值操作
+	ofstream out1, out2;
+	//out1 = out2;//错误的
+	ofstream& out_yinyong = out1;//正确的，或者使用指针解引用？
+	//条件状态 
+	istream::iostate;
+	ofstream::badbit;//流崩溃 为啥呢
+	ofstream::failbit;//操作失败
+	ofstream::eofbit;//达到了文件结束
+	ofstream::goodbit;//正常状态 返回0
+	out1.eof();//其实就是iseof 是否是到达了末尾
+	out1.fail();
+	out1.bad();
+	out1.clear();//将所有state 置位 这样的话就能继续用了，当然如果还有的话 如果在eof 肯定不能继续用了哇
+	auto flags = out1.rdstate();//返回流的状态
+	out1.setstate(flags);//设置流状态 为啥不直接Clear呢
+	//failbit 是可恢复的错误 badbit 是不可恢复的错误 末尾eof 和 failbit 都会有
+	//管理流缓存 系统io很慢，所以一次性读到一个buffer 然后再慢慢解析是比较好的，写入文件其实也是一样的，最好自己写到buffer里面再一次性的写入比较好
+	//unitbuf() 设置流内部状态
+	cout << unitbuf; //立即输出  但是很烦的就是它本身是一个函数 所以总是会被联想成一个括号
+	//以后还是使用doxygen 好了 但是qt是不是不可以用这个呢？
+
+	//输入和输出流绑定 想了下还是使用stringstream 比较好
+	string str = "12315 hehe";
+	string str1;
+	istringstream scin;
+	scin.tie(&cout);//关联 输出和输出 会被同时输出也会被 记录到这个流里面去 但是看不到 还是记录到文件中直观一些
+	//这个有点问题 看解决方案好像是直接使用stringstream
+	//https://bytes.com/topic/c/answers/63884-stringstream-tie-problem
+	ofstream fout("outfile.txt");
+	scin.tie(&fout);
+	scin.str(str);
+	int a;
+	scin >> a;
+	scin >> str1;
+	fout << unitbuf;
+	//文件流 ios::in out app ate trunc //截断 binary 二进制
+	//其实就是几个状态操作 和打开方式之类的 但是如何直接输出到buffer 其实也没有说诶
+}
+
+//示例的容器对象
+class Data1 {
+public:
+	Data1() { cout << "默认构造函数被调用"<<endl; };
+	Data1(const int& n) :data(n) { cout << "int 构造函数被调用" << endl; };
+	bool operator<(const Data1& data1) {
+		return this->data < data1.data;
+	}
+	bool operator==(const Data1& data1) {
+		return data1.data == this->data;
+	}
+	~Data1() {cout << "析构函数被调用"<<endl;}
+	int data = 0;
+};
+
+//第九章 顺序容器
+inline void chapter9()
+{
+	//控制元素存储和顺序访问的能力
+	//vector deque list forward_list array string
+		//string vector 内部是连续的内存空间
+			//使用下标访问很快
+			//插入和删除操作比较慢
+		//list forward_list 内部是链表形式
+			//插入和删除比较快
+			//下标访问需要遍历 会比较慢
+			//额外内存开销 存放指针等
+		//dequeue 较复杂
+			//也支持 随机访问，很快
+			//插入 删除比较慢 但是两端很快
+				//估计是因为它是像两端扩展的，都有部分扩展空间
+		//array 是c的数组的升级版，多了一个size 对象的样子……
+	//容器选择 方式
+	//默认vector即可
+	//小元素 char int 之类的排除 list forward_list
+	//随机访问 使用vector deque
+	//中间插入 选forward_list 或者list
+	//头尾插入比较多 使用deque
+	//一开始需要使用插入，之后都是随机访问
+		//如果是有序的，使用vector 然后排序操作
+		//如果不是 直接使用list 插入 然后转为vector
+			//如果只有一次输入 那这种方式肯定是最好的了
+	//顺序容器 关联容器 无序容器
+	//容器限制
+		//顺序容器 要求可以使用默认构造函数
+		//无序容器要能比较大小
+			//最少也要实现 < 小于符号的重载
+	
+	//容器操作
+	//类型别名
+	vector<string> vs{ 10,"hello" };
+	vector<string>::iterator it = vs.begin();
+	vector<string>::const_iterator cit = vs.cbegin();
+	vector<string>::size_type s1 = vs.size();
+	vector<string>::difference_type d_ = vs.begin() - (vs.begin() + 2);
+	vector<string>::reference vsr = vs[0];//是它内部类型的引用 ,所以为什么它变成了cv::Cstring呢？ 难道造成了名字污染？
+	vector<string>::const_reference cvsr = vs[0];//const引用的写法
+	//构造函数
+	vector<string> vs2;
+	vector<string>vs3(vs2);
+	vector<string> vs4(vs.begin(), vs.end());//直接值拷贝，不过想来citerator 也是可以的
+	vector<string> vs5(vs.cbegin(), vs.cend());//看吧，毕竟它内部不会对其进行修改
+	vector<string> vs6{ "what","fuck","day","is","today" };
+	//赋值与 swap
+	vs3 = vs2;
+	vs3 = { "he","he","ha","ha"};//相当于右边是发生了隐式类型转换的吧 变成了一个临时变量，然后再赋值给vs3
+	vs3.swap(vs2);//直接使用交换函数 所以这个算是值拷贝还是内部的指针进行了交换？
+	swap(vs3, vs);//等价上面那种
+	//大小
+	vs2.size();
+	vs2.max_size();//是不是 已经申请的内存呢？应该不是只是这个容器的限制
+	vs3.empty();//is_empty 的缩写，我发现还是写成is 比较好，虽然知道clear 才是清空，不过还是觉得不爽呢 empty 可能因为只是个形容词吧，所以就不需要is?
+	//添加 删除 元素
+	vs.insert(vs.end(),"??");//这个函数，每个的实现不同应该是 
+		//插入肯定是得指定一个后项，为什么？不然我怎么插入到它首位置
+	vs.emplace(vs.end(),"!!");//类似插入，但是不调用构造函数，直接使用参数 等到插入的时候再内部使用new 之类的东西 这样的话可以更优化
+	vs.erase(--vs.end());//清除某个元素 毕竟如果是最后一个元素 肯定是没办法删除的吧喂
+	vs.clear();//直接就清空了 不过应该只是计数器清零了 
+	//关系运算符、
+		//前提是内部的对象有至少实现了
+			// < (小于)操作符
+	vs == vs2;
+	vs != vs2;
+	vs < vs2;
+	vs >= vs3;
+	//迭代器获取
+	vs.begin();
+	vs.cbegin();//返回const 迭代器
+	//反向迭代器的额外成员 forward_list 不支持
+	vector<string>::reverse_iterator rit = vs2.rbegin();
+	vector<string>::const_reverse_iterator crit = vs2.crbegin();//但是这个begin 其实就是吧 注意不是尾后哦
+	//迭代器
+	//迭代器范围 
+	//左闭合区间 左取右不取
+	//其实就是[begin,end)
+	//如果begin == end 就是空的
+	{
+		vector<string> vs = { "heelo","workr" };
+		for (auto it = vs.cbegin();it!=vs.cend();++it)
+		{
+			cout << *it;//迭代器也是使用类似解引用的操作 ，不过应该是重载的了
+		}
+		//反向遍历一遍
+		for (auto it= vs.crbegin();it!=vs.crend();it++)
+		{
+			cout << "reverse  " << *it;
+		}
+		//不过如果是容器内部的类型 一般也是使用auto 来获取的吧，毕竟没事谁需要知道它的类型啊 只要有这么个概念即可了
+		//实现需要申明的时候，直接使用decltype 来申明变量即可了…… 虽然我是没怎么用过啦
+		//容器定义和初始化
+		vector<string> vs1(vs.begin() + 1, vs.end());//使用迭代器进行初始化，这样的话其实相当于截取操作了，你看c++ 的截取操作其实就是初始化操作……
+		vector<string> vs2(100);//使用内部对象的默认构造函数 初始化100个
+		vector<string> vs3(10, "hehe");//使用它的构造函数进行构造，我突然想到它的构造函数好像可以是两个
+		string str(10, 'c');
+		//vector<string> vs4(20, (10, 'c'));//哈哈，不行的 不能使用多参数的初始化？ 如果如果有多个参数的构造函数如何使用呢?
+		vector<string> vs4(20, string(10, 'c'));
+		vector<string> vs5 = { 20,{10,'c'} };//这样通过{} 来初始化strig  这样居然也行？不过这样除了让自己和别人都看不懂外好像也没什么好处……
+
+		//列表初始化
+
+	}
+	{
+		//使用assign 操作 相当于可以使用相容的操作 ，不一定一样
+		vector<double> vd = { 1.1,1.2,1.3 };
+		vector<int> vi;
+		//vi = vd;//这个是错误的对吧
+		//vi = vector<int>(vd.begin(), vd.end());//这个操作也可以？
+		//vi.assign(vd.begin(), vd.end());//反正这两个操作都会warning 估计是因为类型截断？
+		
+		//swap 操作相当于是内部的指针指向发生了改变
+			//所以原先的指针 和 迭代器都能用，不过它们的意义变了，是另一个对象的了。
+			//相当于它们换了个主人，哈哈 虽然还是在那儿，相当于卖房子一样的 里面的家具已经换了个主人
+		//容器的 == 需要元素能有判等操作
+			//其他才是需要 < 操作
+	}
+	{
+		//顺序容器操作
+		//添加元素
+		vector<string> vs1 = { "hello","world" ,"giaogiao"};
+		vs1.push_back("233");
+			//使用的是对象的拷贝
+				//所以这里233 会变成string 然后又被拷贝一遍 所以得是两次构造函数的调用，还有一次析构函数哈哈
+		vs1.emplace_back("!!!");//这个就是一个比较节省内存的版本 好像不支持插入多个的操作
+		deque<string> ds1 = { "hell" };
+		ds1.push_front("what");//只有部分容器支持哈 vector 因为头插入比较慢就不支持 不过可以使用insert 完成这个操作就是了
+		vs1.insert(vs1.begin(), "haha");//这个相当于Vector的 push_front 不过不推荐这么用所以就不实现
+		vs1.insert(vs1.end(), 10, "hehe");//插入10个hehe
+			//n 为 0 则返回其pos 的迭代器
+		vs1.insert(vs1.end(), ds1.begin(), ds1.end());//把deque 中的元素插入进来
+		vs1.insert(vs1.end(), { "hello","world","again" });//插入多个不同元素
+		vector<Data1> vdata = {};
+		vdata.push_back(1);//为什么没有显示的调用两次构造函数呢 因为内部的优化？那为什么调用两次析构函数？
+		vdata.emplace_back(10);//不过确实 emplace 就只调用了一次
+		//元素访问
+		auto &data1 = vdata.back();
+		auto &data2 = vdata.front();
+		try
+		{
+			auto &data3 = vdata.at(3);//如果失败返回啥？ 会抛出异常 但是下面那种就没有抛出异常 直接崩！
+		}
+		catch (out_of_range e)
+		{
+			string what = e.what();
+			cout << what;
+		}
+		
+		
+		auto &data4 = vdata[0];
+		//删除元素
+		vs1.pop_back();
+		ds1.pop_front();
+		//vs1.erase(vs1.end());//行为未定义
+		vs1.erase(vs1.end() - 1);//返回end()
+		vs1.clear();
+
+		//forward_list的额外操作
+		//其他的容器的插入其实都是 insert_before 就是在某个元素之前插入 forward_list 是在某个元素之后插入 insert_after
+		//所有有一个before_begin的迭代器
+		forward_list<string> fstr = { "11","22","33" };
+		//fstr.insert_after(fstr.end(),"hehe");// 它的迭代器不提供加操作 只能从前往后遍历 所以也不支持--操作 估计只能++
+			//这个以为是后插 所以不能这样用
+		//只之前前面的各种操作 后面不支持 但是我在想就算是支持后面的应该也不费事才对啊……
+		//改变容器大小
+		vs1.resize(15,"oo");//多出来的元素都用这个来代替 如果想要全部变成某个元素 就只能拷贝赋值了
+
+		//容器操作可能让迭代器失效
+			//vector 和 string 是顺序存储，所以呢可能分配了新的内存空间，导致这个迭代器失效了
+			//deque 使用的应该是部分连续空间， 再加上list 链表啥的
+				//类似多维数组这么个东西，哈哈
+		//编写改变容器操作的循环程序
+			//删除和新增之后 需要更新这个迭代器 毕竟删除 和 insert 都会返回一个指针的
+			//判断的时候也不要用对象来保存这个end 需要直接使用对象的end
+			//虽然增加了函数调用的开销，不过这个开销其实并不大就是了
+		//vector的增长
+			//当需要重新分配的时候 通常会多分配一些内存 这样就不用每次都去分配内存空间了
+		auto t1 = vs1.capacity();//可以现在可以装多少个对象哈哈 跟size()不一样
+		vs1.shrink_to_fit();//瘦身，跟它整得跟size一样大
+		vs1.reserve(t1+100);//分配至少可以装x个的空间
+			//如果比当前size 小应该不会有所作为吧
+		//string 的额外操作
+		{
+			const char* cp = "what the hell";
+			string str1(cp,7);
+			string str2(str1, 1);//拷贝从str1 [1,-1) 如果长度不满足的话，是会抛出异常的
+			string str3(str1, 1, 3); //拷贝从str1[1, 1+3] 如果超过也不会多拷贝的 很安全
+			auto str4 = str1.substr(1, -3); //后面一个是长度 如果是负数会怎样？ 看样子会被当做一个很大的正数……
+			str4.insert(str4.size(), 10,'c');//可以直接使用下标 而不是迭代器
+			str4.insert(str4.size(), "heiheihei");
+			//appen 和 repalce 操作
+			//append 和 + 是等价的吧
+			str4.replace(0, 3, "hehehehehehehh");//把前三个字母换成这么大一串
+				//没有直接的替换字符串操作 需要先查找？
+			//string 搜索
+			auto pos1 = str4.find("hehe"); //如果要替换 可以使用，等价于
+			auto pos2 = str4.find("hehe",0);//pos 要不要+1呢
+			auto pos3 = str4.find_first_not_of("hehe", 0);//我倒是好奇这个是怎么查找的
+			auto pos4 = str4.find_last_of("he",0);//但是这个第二个参数 应该也是从前往后的pos
+			auto pos5 = str4.rfind("hh");//逆向搜索 是不是从后往前的位置就不知道了
+
+			//比较函数 类似 strcmp
+			str1.compare(1,4,str2,1,4);//最复杂的版本 const char* 因为是指针，所以没有pos2 参数，毕竟可以直接直接+n 哈哈
+			//数值转换
+			auto dstr = to_string(10086.1123);
+			stoi(dstr,0,10);//第二个存放非数值下表 第三个表示进制 str的进制 可以是16进制这样子的
+			stod(dstr,0);
+		}
+	}
+	{
+		//容器适配器 把容器再封装一次
+		//stack queue priority_queue 三个
+	
+		deque<string> str_deq = { "he","wa","hehe","heihei" };
+		stack<string> str_stack(str_deq);
+		//priority_queue 使用vector 所以 难怪能使用 所以有什么用呢……
+		queue<string> str_queue(str_deq);
+		str_queue.front();//队首
+		str_stack.top();//栈顶 嗯 因为两个的形容词不一样
+		str_stack.pop();
+		str_stack.push("gsg");
+		str_queue.pop();
+		str_queue.push("???");
+		//嗯 有点类似流操作的样子。 执行看看 但是并没有改变str_deq 的值啊，所以其实这个就是一个初始化？
+		//栈可以指定实现……
+		vector<string> str_vec1 = { "h","hehe" };
+		stack<string,vector<string>> str_stack1(str_vec1);
+	}
+}
+
+//第十章 泛型算法
+inline void chapter10(){
+	//概述 直接在algorithm 头文件里面
+	//不直接操作容器 需要迭代器范围
+		//但是我觉得用容器就不用了记忆这些了 不是很爽吗……
+	{
+		vector<string> str_vec = { "111","222","333" };
+		auto it = find(str_vec.begin(), str_vec.end(), "222");
+		string result = it == str_vec.end() ? "success" : "failed";
+
+		//迭代器 令算法不依赖于容器
+
+		//但是 依赖于容器 元素的 某些操作
+			//必须实现一些特定的操作才能使用这些算法
+			//find 需要 元素有 ==
+			//其他基本都需要 < 操作符重载
+		vector<Data1> data1{1,2,3,4};
+		auto dit1 = find(data1.begin(), data1.end(), 4);
+		//算法不依赖于容器实现
+			//但是它的迭代器的累加 累减呢？
+				//所以还是要看它的迭代器的实现？ 嗯迭代器其实也分为好几个，所以其实内部还是有个迭代器的继承什么的
+					//如果能够插入或者删除 也是因为迭代器做的…… emmm
+	}
+	{
+		//100 个算法
+		// 我在想就没法提供一个Qt 和 c++ 通用的算法嘛？ 每次都要转过来转过去很麻烦的
+			//我知道了 得自己写两个函数，能够接受c++ 和Qt 的不同的就行了，或者提供一个隐式转换，把string转到QString
+				//不行啊，std::string 是已经定义好了的， 所以不能直接转换为QString 所以呢 使用一个中间类还是直接重写Qt？
+				//那也没有QString 到 string的转换啊，重新写一个中间类？
+		{
+			// 只读算法
+				//求和
+			vector<string> str_vec1 = { "111","222","333" };
+			vector<string> str_vec2 = { "111","111","222","333" };
+			vector<string> str_vec3 = { "111" };
+			string sum_str1 = accumulate(str_vec1.begin(), str_vec1.end(), string(""));//没法用lambda 表达式来进行计算哇？
+			string sum_str2 = accumulate(str_vec1.begin(), str_vec1.end(),string(""), [](const string& sum,const string& num) {return sum + num; });
+				//报错是因为allocator 的原因 原来使用string 初始化它就行了…… 因为内部不会调用它的构造函数 而且貌似有点 explict那味儿 有可能是因为const 的原因?
+			//	操作两个序列 第二个序列至少比第一个 一样或者更长 
+			auto equal_result1 = equal(str_vec1.begin(), str_vec1.end(), str_vec2.begin()/*, str_vec2.end()*/);//不带这个参数的话 比较到一样长即可
+			auto equal_result2 = equal(str_vec1.begin(), str_vec1.end(), str_vec3.begin(), str_vec3.end());//定义了这个就不会判断它够不够长了？
+			try
+			{
+				auto equal_result3 = equal(str_vec1.begin(), str_vec1.end(), str_vec3.begin()); //会直接报错
+				//而且还catch 不到？
+			}
+			catch (out_of_range e)
+			{
+				string str = e.what();
+			}
+
+		}
 	}
 }

@@ -167,6 +167,11 @@ void UnitTest::test_cpp_primer()
 // 	chapter2();
 // 	chapter3();
 //	chapter4();
-	chapter5();
+// 	chapter5();
+// 	chapter6();
+// 	chapter7();
+//	chapter8();
+	chapter9();
+	chapter10();
 }
 

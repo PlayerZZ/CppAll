@@ -220,6 +220,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <Text Include="indata.txt" />
     <Text Include="sale_data.txt" />
     <Text Include="sale_data2.txt" />
     <Text Include="vs快捷键.txt" />
