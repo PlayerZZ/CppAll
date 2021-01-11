@@ -18,6 +18,14 @@
 //#include <priority_queue> //这个又包含不了
 #include <algorithm>
 #include <functional>
+#include <map>
+#include <set>
+// #include <multimap>
+// #include <mulitset> //居然都不支持
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+
 using namespace std;
 
 inline void chapter1() {
@@ -1343,5 +1351,130 @@ inline void chapter10(){
 		list<int> list2{ 6,7,8,9,10 };
 		list1.splice(list1.end(),list2);
 		//相当于 inster 只不过是链表的 有点像move函数哈哈
+	}
+}
+
+//11 章 关联容器
+inline void chapter11() {
+	//使用关联容器
+	//map 关联数组 ？
+	map<string, int> map1;
+	map1["hello"] = 10;
+	//可以用来做计数器 因为初始化为0
+	istringstream str_in("hello hello world");
+	string str_temp;
+	while (str_in>>str_temp)
+	{
+		map1[str_temp]++;
+	}
+	//使用set 用来排除重复
+	str_in.str("hehe hehe heihei haha ha gs");
+	set<string> set_str;
+	//这里没有重复的数据
+	while (str_in>>str_temp)
+	{
+		set_str.insert(str_temp);
+	}
+	{
+		//关联容器不支持 位置相关操作
+			//push_back/front 都不行
+		//迭代器都是双向的
+		//multimap 支持多个相同键值
+		//multiset 就离谱了 本来不应该唯一吗？ 
+		//关键字类型要求 
+			//需要能够比较 < 操作
+				//严格若序
+					//说了很多 其实即使定义一个 < 即可
+					//了不起再定义一个==
+				//这特么其实定义一个 < 就行了
+		//这个multiset 就没有个计算操作 ？还不如使用vector呢，虽然不排序
+		struct TempStruct
+		{
+			int a;
+			int b;
+		};
+// 		//a 作为10 位 b作为个位
+		auto compare_func = [](const TempStruct& a1, const TempStruct& a2) {return a1.a*10 + a1.b < a2.a*10+a2.b; };
+		multiset< TempStruct, decltype(compare_func)* > a(&compare_func);//这也太麻烦了吧 而且没法初始化？
+		pair<string, int> p1 = {"hello",1};
+		p1.first; p1.second;
+		auto p2 = make_pair("", "");//自省推断
+		pair<string,string> p3 = make_pair("", "");//自省推断
+		p3 = p2;//应该是它的元素的构造函数兼容即可
+	}
+	{
+		//关联容器操作
+		map<string, int>::key_type i1 = "hello";
+		map<string, int>::value_type i2 = { "10",10 };
+		map<string, int>::mapped_type i3 = 10;
+
+		//迭代器
+		map<string, int> map1 = { {"h",1},{"a",2},{"aa",3} };
+		auto it = map1.begin();
+		while (it!=map1.end())
+		{
+			it->first;
+			it->second;
+		}
+		//insert 不能做update 操作
+		auto result = map1.insert({ "h",2 });
+		if (result.second==false)
+		{
+			cout << "插入失败,key:" << (result.first)->first << ",value:"<<(result.first)->second<<endl;
+		}
+		//删除元素
+		auto re1 = map1.erase("h");//map 只有 0 1 mulitmap 有0 n
+		//下标操作 插入和更新
+			//mulitmap 没有下标操作
+		map1["giogio"] = 10;
+		//访问元素
+		auto find_result = map1.find("giogio");
+		auto count_result = map1.count("giogio");//multimap 就不一样了，因为访问的时候相当于是访问二维数组一样的
+
+		//遍历multimap
+		multimap<int, int> map2 = { {1,2},{1,3},{1,4},{1,5},{1,3},{2,3} };
+		//方法1 使用count find
+		auto find_result2 = map2.find(1);
+		auto count_result2 = map2.count(1);
+		while (count_result2--) {
+			cout << find_result2->first << " : " << find_result2->second << endl;
+			find_result2++;
+		}
+		//方法2 使用lower_bound upper_bound
+		auto beg = map2.lower_bound(1);
+		auto end = map2.upper_bound(1);
+		for (auto beg = map2.lower_bound(1),end = map2.upper_bound(1);
+			beg!=end;
+			++beg)
+		{
+			beg->first;
+			beg->second;
+		}
+		//方法3 使用equal_range
+		for (auto pos = map2.equal_range(1);pos.first!=pos.second;pos.first++)
+		{
+			pos.first->first;
+			pos.second->second;
+		}
+	}
+	{
+		//无序容器
+		unordered_map<int, int> unorder_map1;
+		//背后是一堆桶 bucket
+			//根据key的hash 值映射到不同的桶里
+			//但是桶管理 太多不也一样和ordered 一样嘛
+		//map 背后是红黑树 查找可能相对麻烦
+		//unodered_map 背后是哈希表 emmm 遍历hash表？遍历能快到哪儿去嘛
+			//想到了一种情况 就是直接对hash值求余，就可以让它能够取到这个值了
+				//这是最傻的实现方式 不过想来也差不多吧 关键它还是要判断它是否存在吧？怎么判断？
+				//直接看找到的那个地址有没有想要的东西就行了?
+				//类似取余 就有9个 然后后面看有没有这个行了 所以只有这张表是顺序存储的，其余都是可以
+					//但是要更新这张表就行了
+		//桶其实就是那个哈希表的大小吧……
+		unorder_map1.bucket_count();
+		unorder_map1.bucket_size(0);//从0开始还是从1开始呢
+		unorder_map1.bucket(1);//在哪个桶中
+		//桶内还有迭代器
+		//之前就觉得直接下标访问就行了 现在发现还真麻烦啊
 	}
 }
