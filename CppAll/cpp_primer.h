@@ -25,7 +25,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
-
+#include <memory.h>
+//#include <allocators>
 using namespace std;
 
 inline void chapter1() {
@@ -1477,4 +1478,252 @@ inline void chapter11() {
 		//桶内还有迭代器
 		//之前就觉得直接下标访问就行了 现在发现还真麻烦啊
 	}
+}
+
+//Blob 其实就是二进制的封装
+//但是它想实现的 其实就是一个shared_ptr 要做的事情啊 只不过上层封装了？有意思？
+class StrBlobPtr;//前置声明 类似extern 之类的吧
+class StrBlob {
+public:
+	using size_type = vector<string>::size_type;
+	StrBlob() {};
+	StrBlob(initializer_list<string> i1) :data(make_shared<vector<string>>(i1)) {};
+	friend class StrBlobPtr;
+	size_type size() { return data->size(); };
+	bool empty() { return data->empty(); };
+	void push_back(const string& t) { data->push_back(t); };
+	void pop_back() {
+		check(0, "back on empty StrBlob");
+		data->pop_back();
+	};
+	string& front() {
+		check(0, "front on empty StrBlob");
+		return data->front();
+	};
+	string& back() {
+		check(0, "back on empty StrBlob");
+		return data->back();
+	};
+	//这里StrBlobPtr 对于StrBlob 来说还是未定义 只不过它名字先显示出来了 除非就把这两个函数定义在后面 嘿嘿
+	// 			StrBlobPtr begin() { return StrBlobPtr(*this); };
+	// 			StrBlobPtr end() { return StrBlobPtr(*this,data->size()); };
+	StrBlobPtr begin();
+	StrBlobPtr end();
+private:
+	shared_ptr<vector<string>> data;
+	void check(size_type i, const std::string &msg) const {
+		//直接报错啊
+		if (i >= data->size() == 0)
+		{
+			throw out_of_range("msg");
+		}
+	};
+};
+
+class StrBlobPtr {
+public:
+	StrBlobPtr() = default;
+	StrBlobPtr(StrBlob& sb, size_t sz = 0) :wptr(sb.data), curr(sz) {};//编译器非要说我错了
+	std::string operator[](const int& index) const //解引用
+	{
+		auto p = check(index, "dereference past end");//解引用到最后了
+		curr = index;//不改为mutable 是会报错的
+		return (*p)[index];
+	};
+	StrBlobPtr& incr() //前向递增
+	{
+		auto p = check(curr, "increment end of StrBlobPtr");//已经是尾后指针了
+		++curr;
+		return *this;
+	};
+private:
+	shared_ptr<vector<string>> check(size_t i, const string& msg) const {
+		auto ret = wptr.lock();
+		if (!ret)
+		{
+			throw runtime_error("unbound StrBlob");//已经销毁了 访问个球
+		}
+		if (i >= ret->size())
+		{
+			throw out_of_range(msg);
+		}
+		return ret;
+	};
+	weak_ptr<vector<string>> wptr;
+	size_t mutable curr = 0;//即使是const 函数也可以修改的对象
+};
+
+//12章 动态内存
+inline void chapter12()
+{
+	//static 对象 在对象第一次使用时初始化，程序退出时销毁
+	{
+		//动态内存和智能指针
+		//以前使用的时候只能new 出来
+			//但是忘记delete 就容易内存泄漏
+		// shared_ptr
+		class ClassA {
+		public:
+			int _a = 0;
+			ClassA() = default;
+			ClassA(const int& a):_a(a) {};
+			~ClassA() {
+				cout << "析构函数被调用" << endl;
+			}
+		};
+		shared_ptr<ClassA> a = make_shared<ClassA>(1);//内部使用初始化 确实是变长了吧 不过也不用担心内存泄漏了
+		//实现不行可以
+		//typedef shared_ptr<ClassA> aptr; 这个不是很清楚
+		//反正typedef 能用的 using 都可以
+		//https://zhuanlan.zhihu.com/p/21264013
+		using aptr = shared_ptr<ClassA>;
+		aptr b = make_shared<ClassA>(2);
+		b.get();//返回其指针 不推荐使用 因为使用指针就意味着不会用普通指针了
+		swap(a, b);//交换内存
+		//
+		auto u_r = a.unique();
+		auto count_r = a.use_count();
+		a = b;//a 原先指向的内存 计数器会减一，减到0 就直接销毁了，这儿因为只有一个引用，所以会立即销毁
+		//推荐使用auto 来接收 make_shared<T>()
+		auto ret_ptr = make_shared<ClassA>(10);
+		//使用动态 生存周期的类
+		//1 程序不知道自己需要使用多少对象
+			//内存不知道多大
+		//2 程序不知道所需对象的具体类型
+			//父类 多态
+		//3 程序在多个对象间共享数据
+			//虽然引用也行吧，终究要在一开始就进行数据绑定，有点不友好
+
+		//这特么就离谱 本身vector就是内部动态内存分配 你这new 又算个啥呢
+		vector<int> *pv = new vector<int>{ 1,2,3,4,5 };
+		auto p1 = new auto(1); //这特么就离谱对吧 我要写个宏岂不是就是无类型的了？
+			//只是后面这个auto 里面必须是单参数的 通常就是这个类型本身，不然有太多可以推断的东西了
+		//动态分配 const 对象
+		const int* p2 = new int(10);
+		//*p2 = 20;
+		//内存耗尽 bad_alloc
+			//改为不抛出异常的模型……
+		int* p3 = new(nothrow) int(20); //如果失败返回空指针
+			//定位new 允许传入额外参数
+		delete p1, p2;
+		//delete 空指针的行为未定义
+		//delete 之后重置指针
+		p1 = nullptr, p2 = nullptr;
+
+		//shared_ptr 和 new
+		shared_ptr<int> p4(new int(30));
+		//不能隐式类型转换 因为是explict 的 也就是说你得自己显示的赋值
+		shared_ptr<int> p5(p1);//p1 是new 出来的
+		//shared_ptr<int> p6 = p1;//其实不应该重复的赋值给一个sharedptr
+		//shared_ptr<int> p6(p1);//这样也是不对的，存在doule free
+		//普通指针和智能指针不要混着用 因为不知道什么时候就销毁了
+		//所以推荐使用make_shared
+		auto f = [](shared_ptr<int> p) {};
+		//f(shared_ptr<int>(p1));//这样会因为它是临时变量 直接销毁…… 所以也是错误的
+		p5.reset(new int(5));//正确的重新复制 而不是直接等于一个普通指针 或者直接一个make_shared 也行，只是没有这个表达清楚
+		//并且复制也是一个reset 会有概率销毁以前的对象
+		//智能指针因为析构会有 析构操作
+			//所以在异常抛出时，是会自动销毁对象的
+		// 于c 代码结合的时候
+			//需要销毁某些资源文件 可是自定义销毁函数
+		auto int_deleter = [](int* p) {cout << "我要释放个P" << endl;/* delete p; */};//这里不是真的删除 因为压根不用删除
+		int i = 0;//假设里面有些东西 想在函数结束的时候执行
+		{
+			shared_ptr<int> int_sp(&i, int_deleter);//但是为什么传入引用呢？而不是动态内存的指针？很迷
+			//其实就是用在代码块里 有限范围的那种吧大概 毕竟容易万一传出去了，它本身自己被析构就尴尬了
+		}
+		//所以其实可以使用智能指针进行日志记录诶……
+			//生命周期结束 说明任务结束……
+		//注意事项
+			//不使用相同的内置指针初始化多个智能指针
+				//reset 也不行
+			//不用delete get()返回的指针
+			//不使用get 来初始化 或者reset 另一个智能指针
+			//如果非要用get 记得范围,毕竟万一智能指针无效了就尴尬了
+			//如果使用智能指针保存的对象 不是new 分配的，那就得自定义删除器
+				//所以其实不用删除的对吧……
+				//所以其实就是用来做一些结束操作 经常需要重复的操作
+					//那就不是日志操作用得到吗哈哈
+		//unique_ptr 
+		//一次性的指针 只能独得恩宠
+		unique_ptr<int> uni_ptr1(new int(10));
+		unique_ptr<int> uni_ptr2 = make_unique<int>(1);
+		p1 = uni_ptr1.release();//这个直接就放弃控制权了
+		//unique_ptr<int> uni_ptr3(uni_ptr1);//不允许
+		//uni_ptr2 = uni_ptr1;//不允许
+		//unique_ptr 必须指定 删除类型才能指定删除器
+		//这个应该更适合用来答应日志 嘿嘿 不过需要把函数写好
+		//不过直接在 构造和 析构中写好不就好了吗 ，可能修修补补的时候 
+			//可以直接写lambda 看着比较黑魔法
+		auto deletor_i = [](int*) ->void {return; };
+		unique_ptr<int, void(*)(int*)> ptr4(new int(1),deletor_i);
+		//但是允许作为函数返回值返回
+		{
+			auto make_unique_m = [](int i) {return unique_ptr<int>(new int(i)); };
+			unique_ptr<int> unique_m;
+			unique_m = make_unique_m(2);//好像是move 构造函数
+		}
+		{
+			//weak_ptr 可怜的家伙 不能掌握自己对象的生命周期 可能用着用着就没了
+				//应该是对get的一种妥协，不让别人来直接使用指针
+			weak_ptr<int> p10 = p5;//
+			p10.use_count();//返回的p5的count
+			auto p100 = p10.lock();//其实是返回shared_ptr 如果没有返回空shared_ptr
+			
+			
+			StrBlob strb = {"aa","bb","ccc"};
+			StrBlobPtr strptr(strb);
+			auto ts = strptr[1];
+		}
+	}
+	//12.2 动态数组
+	{
+		//new 和 delete 一次分配一个 可以先多分配点 用的时候再给它
+		//allocator 类 先分配 但不初始化的样子
+		//但是基本都不用使用动态分配数组 使用vector 基本上就够了
+		int *pia = new int[10]{1,2,3,4,5};//返回的都是首地址的指针而已
+		new char[0];//合法的非空 指针 但是解引用就会有问题
+		//释放
+		//delete[] pia;
+		//unique 专属 数组版本
+		unique_ptr<int[]> pib(pia);
+		pib[2];//可以使用下标 但是不能使用.  ->
+		//shared_ptr 麻烦一些 没有提供重载版本 得自己管理
+		shared_ptr<int> pic(new int[10]{ 1,2,3,4,5 }, [](int* p) {delete[] p; });//毕竟对它来说 它也只是一个首字母而已
+			//使用更搞笑了……
+		(pic.get() + 5);//相当于[5]的操作
+		//allocator 类
+		allocator<string> string_alloctor;
+		auto p = string_alloctor.allocate(10);//创建了10个未初始化的空间哦
+		string_alloctor.construct(p, 10,'c' );//通过它创建1 一个 10 个c的string
+		//嗯 p 已经是一个 string了
+		string str_b = *p;
+		string_alloctor.address(*p);//就很迷 这个只有值能知道地址 ？是一个查找操作？
+		//然后又把它析构掉
+		str_b = *p;
+		string_alloctor.destroy(p);//析构掉了
+		//必须先调用destory 再调用deallocate 函数 
+			//因为要确保函数被正确析构 这样的话一些收尾工作能被正确的执行到
+		//string_alloctor.deallocate(p, 10); //这样也太不安全了吧
+		//对于未初始化的部分 还有其他操作
+			//但是都需要迭代器 意思是要先有那么一个容器来存储值
+				//但是都有容器了 其内部必然也是动态内存 干嘛非要来拷贝到这儿呢，还占用连续内存空间，用vector不香么？属实有病？
+		vector<string> data = { "hello","world" };
+		uninitialized_copy(data.begin(), data.end(), p);
+			//但是这样快啊 不用调用构造函数 直接拷！
+			//但是如果内部有指针 那特么不就直接浅拷贝？
+		//问题来了 vector 这些为什么用指针？
+			//因为啊 赋值的时候是深拷贝
+				//除非是QString 是不修改不拷贝
+					//因为那些非const 函数吧估计是
+			
+	}
+}
+
+StrBlobPtr StrBlob::begin() {
+	return StrBlobPtr(*this, 0);
+}
+
+StrBlobPtr StrBlob::end() {
+	return StrBlobPtr(*this, data->size());
 }
