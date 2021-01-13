@@ -160,7 +160,32 @@ void UnitTest::test_TxCos()
 	TXCOS cos;
 	QVERIFY(cos.sendFile("Resources/wechat.jpg"));
 }
+class D {
+	constexpr static int a = 0;
+	constexpr static int b = 10;
+};
+void testSize() {
+	class A { virtual void t1() {}; };
+	class B :public A {};
+	auto t1 = sizeof(A);
 
+
+	//A a;
+	//auto t2 = sizeof(a);
+	auto t3 = sizeof(B);
+	B b;
+	auto t4 = sizeof(b);
+	int *p = new int(10);
+	auto t5 = sizeof(p);
+	class C {
+		void f1() {};
+		void f2(int i) {};
+	};
+	auto t6 = sizeof(C);
+	auto t7 = sizeof(D);
+	D d;
+	auto t8 = sizeof(d);
+}
 void UnitTest::test_cpp_primer()
 {
 // 	chapter1();
@@ -175,5 +200,7 @@ void UnitTest::test_cpp_primer()
 //	chapter10();
 //	chapter11();
 	chapter12();
+	testSize();
+	chapter12_9();
 }
 

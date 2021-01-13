@@ -1716,7 +1716,9 @@ inline void chapter12()
 			//因为啊 赋值的时候是深拷贝
 				//除非是QString 是不修改不拷贝
 					//因为那些非const 函数吧估计是
-			
+		//文本查询程序，它的行不用重复保存 它的计数器需要map?
+		//它的行 使用一个set<line>  来保存
+
 	}
 }
 
@@ -1726,4 +1728,95 @@ StrBlobPtr StrBlob::begin() {
 
 StrBlobPtr StrBlob::end() {
 	return StrBlobPtr(*this, data->size());
+}
+class QueryResult;
+class TextQuery {
+public:
+	//friend class QueryResult;
+	using line_no = std::vector<string>::size_type;//行号
+	QueryResult query(const string& word);//这个必须在外部定义才行
+	TextQuery() = default;
+	TextQuery(ifstream& infile): file(new vector<string>){
+		//构造函数 先列表初始化 成员1 指针对象
+		//成员2 是map 不需要初始化
+		string text;
+		//直接使用infile.getline 居然是一个char* 差评
+		while (getline(infile,text))
+		{
+			file->push_back(text);
+			line_no line_num = file->size() - 1;//这里不该使用size_t 吗哈哈
+			istringstream in_line(text);
+			string word;
+			while (in_line>>word)
+			{
+				auto &lines = word_map[word];//如果不存在 调用默认构造函数 分配？
+					//不得 只会初始化为空指针……
+				if (!lines)
+				{
+					lines = make_shared<set<line_no>>();
+				}
+				lines->insert(line_num);//如果重复 不得管吧
+				//所以如果想要避免重复，可以使用multimap,或者使用一个单独的成员来计数都是可以的
+					//或者需要底层不用set 使用一个vector<pair<int,int>> 这样甚至能够 记录行号和第几个单词 
+			}
+		}
+
+	}
+private:
+	shared_ptr<vector<string>> file;//保存的文件
+	map<string, shared_ptr<set<line_no>>> word_map;//保存的字和行号的对应关系 1 对 多所以后面是一个set
+	//因为要共享数据 所以要shared_ptr
+};
+class QueryResult {
+public:
+	friend ostream& operator<<(std::ostream& out_stream, const QueryResult& requry_result);
+	//名字都不可见 必须要TextQuery::line_no 才行
+	QueryResult(string word, shared_ptr<set<TextQuery::line_no>> _line_nums, shared_ptr<vector<string>> _file):to_query_word(word),line_nums(_line_nums),file(_file) {};
+private:
+	string to_query_word;
+	shared_ptr<set<TextQuery::line_no>> line_nums;
+	shared_ptr<vector<string>> file;
+	
+};
+QueryResult TextQuery::query(const string& word)
+{
+	static shared_ptr<set<line_no>> nodata(new set<line_no>);//怎么理解呢 虽然不是空指针 但是没有数据
+	//但是这样外层就可以访问内层的这个变量了 虽然没啥作用吧，不对 它本身就是private 其实也访问不了 完美闭环哈哈
+	if (word_map.count(word)) //用find 也是一样的
+	{
+		//还是这样写比较习惯一些 但是find 的结果second 又可以作为结果返回 是不是用find 更好呢……
+		return QueryResult(word, word_map[word], file);
+	}
+	else {
+		//返回一个空指针
+		return QueryResult(word, nodata, file);
+	}
+	
+	//不能直接返回 毕竟会返回一个空map 影响它自身 这样虽然没太大影响 其实也会增加它的内存
+	
+}
+string make_plural(const int& times, const string& word, const string& profix)
+{
+	return times > 1 ? word + profix : word+"";//TODO 但是返回的是一个普通string 没问题？
+}
+//输出函数 一般定义为friend 因为确实是跟类型关系不大 ，只是需要它的成员
+	//关键定义为成员函数，你还得成员才能访问？
+ostream& operator<<(std::ostream& out_stream, const QueryResult& query_result) {
+	out_stream << query_result.to_query_word << " occurs " << query_result.line_nums->size() << " times" <<endl;
+	for (auto num :*query_result.line_nums)
+	{
+		out_stream << "\t(line " << num + 1 << ")"
+			//<< *(query_result.file->begin() + num) << endl;
+			<< (*query_result.file)[num] << endl;//这样看着不香迈
+	}
+	return out_stream;
+}
+
+inline void chapter12_9() {
+//12章最后的测试代码
+	//直接用这个代码测试吧
+	ifstream ifs("cpp_primer.h");
+	TextQuery text_query(ifs);
+	auto result = text_query.query("void");
+	cout << result;
 }
